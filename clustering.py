@@ -20,9 +20,15 @@ from sklearn.metrics import silhouette_score
 import logging
 from gensim.summarization import keywords
 import nltk
+import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.cluster.hierarchy as shc 
 from sklearn.cluster import AgglomerativeClustering
+from sklearn import metrics
+from dunn_index import dunn
+#import sys
+#sys.path.append('C:/UsersTK257812/requirements clustering/dunn_index.py')
+#from jqmcvi import base
 nltk.download('stopwords')
 nltk.download('wordnet')
 
@@ -33,58 +39,17 @@ stopword_set = set(stopwords.words('english')+['a','of','at','s','for'])
  
 #df = open('C:/Users/takwa/Desktop/files/25-09-19/admin-key-words.txt','r').readlines()
 #df_orig = open('C:/Users/takwa/Desktop/files/25-09-19/admin-original.txt','r').readlines()
-df = open('C:/Users/TK257812/Desktop/docs/25-09-19/Visitor-key-visitor.txt','r').readlines()
-df_orig = open('C:/Users/TK257812/Desktop/docs/25-09-19/Visitor.txt','r').readlines()
+#df = open('C:/Users/TK257812/Desktop/docs/25-09-19/preprocessed_visitor.txt','r').readlines()
+#df_orig = open('C:/Users/TK257812/Desktop/docs/25-09-19/Visitor.txt','r').readlines()
 #df = open('C:/Users/takwa/Desktop/files/25-09-19/user-keyWords.txt','r').readlines()
-#df_orig = open('C:/Users/takwa/Desktop/files/25-09-19/User.txt','r').readlines()
-
-
-
-#df = open('C:/Users/takwa/Desktop/files/25-09-19/test_docs_tjc.txt','r').readlines()
+df_orig = open('C:/Users/TK257812/Desktop/docs/25-09-19/User.txt','r').readlines()
+df = open('C:/Users/TK257812/Desktop/docs/25-09-19/preprocessed_user.txt','r').readlines()
 dfLen = len(df)
 
-## cleaning
-def process(string):
-    string=' '+string+' '
-    string=' '.join([word if word not in stopword_set else '' for word in string.split()])
-    
-#search and replace
-    string=re.sub('\@\w*',' ',string)
-    string=re.sub('\.',' ',string)
-    string=re.sub("[,#'-\(\):$;\?%]",' ',string)
-    string=re.sub("\d",' ',string)
-    string=string.lower()
-    string=re.sub("nyse",' ',string)
-    string=re.sub("inc",' ',string)
-    string=re.sub(r'[^\x00-\x7F]+',' ', string)
-    string=re.sub(' for ',' ', string)
-    string=re.sub(' s ',' ', string)
-    string=re.sub(' the ',' ', string)
-    string=re.sub(' a ',' ', string)
-    string=re.sub(' with ',' ', string)
-    string=re.sub(' is ',' ', string)
-    string=re.sub(' at ',' ', string)
-    string=re.sub(' to ',' ', string)
-    string=re.sub(' by ',' ', string)
-    string=re.sub(' when ',' ', string)
-    string=re.sub(' of ',' ', string)
-    string=re.sub(' are ',' ', string)
-    string=re.sub(' if ',' ', string)
-    string=re.sub(' on ',' ', string)
-    string=re.sub(' can ',' ', string)
-    string=re.sub(' must ',' ', string)
-    string=re.sub(' system ',' ', string)
-    string=" ".join(lemma.lemmatize(word) for word in string.split())
-    string=re.sub('( [\w]{1,2} )',' ', string)
-    string=re.sub("\s+",' ',string)
-    return string
-
-#process text 
 text = []
 for line in df:
     print (line)
-    newLine = process(line)
-    text.append(newLine) 
+    text.append(line) 
 print(text)
 
 #tfidf
@@ -157,7 +122,7 @@ def inner_similarity_mihalcea(sent1, sent2):
         for w2 in sent2.split():
             sim.append(cos_similarity(w1, w2, model, dim))
             idf = idfMatrix[vocabulary.get(w1)]
-        #print("words idf : ", w1, idf)
+            #print("words idf : ", w1, idf)
         maxSim = max(sim)
         #print("maxSim", maxSim)
         innerSim = idf * maxSim
@@ -173,7 +138,7 @@ def similarity_mihalcea (reqDoc):
     for reqL in df:
         row = []
         for reqC in df:
-            row.append(0.5 * (inner_similarity_mihalcea(process(reqL), process(reqC))+ inner_similarity_mihalcea(process(reqC), process(reqL))))
+            row.append(0.5 * (inner_similarity_mihalcea(reqL, reqC)+ inner_similarity_mihalcea(reqC, reqL)))
             simReq.append(row)
     return simReq
 
@@ -234,6 +199,7 @@ def clustering_Hac(n_clusters, final_matrix, file):
     HClustering = AgglomerativeClustering(n_clusters , affinity="euclidean",linkage="ward").fit(final_matrix)
     HClustering.fit_predict(final_matrix)
     
+        #visualize the clusters
     print(HClustering.labels_)
     clusters = collections.defaultdict(list)
     
@@ -252,33 +218,14 @@ def clustering_Hac(n_clusters, final_matrix, file):
     ## get sentences from the txt file
     return dict(new_clusters)
 
-#print ("results :",clustering(3, final_matrix, df))
-#for cluster in range(n_clusters):
-#    print ("cluster ",cluster,":")
-#    for i, gpe_sentences in enumerate(dict(clusters)[cluster]):
-#        print("gpe of sentences : ", gpe_sentences)
-#    nb_sentences = (gpe_sentences+1) / dfLen
-#    print("nb sentences: ", nb_sentences)
 
-#print (kmeans.labels_)
-    
+#cluster labels
 def key_words (cluster):
-    #X = tfidf_vectorizer.fit_transform([cluster])
-    #print("cluster", cluster)
-#    tfidf_ = TfidfVectorizer()
-## A mapping of terms to feature indices. => dictionnary
-#    transformed = tfidf_.fit_transform([cluster])
-#    print("key words tfidfVectorizer",transformed.get_feature_names())
-   # print("key words tfidfVectorizer", tfidf_.get_feature_names())
     a = keywords(cluster, words = 5,scores = True, lemmatize = True)
     print("key words summarization gensim",a)
     #return tfidf_.get_feature_names()
     return a
     
-    #a = keywords(text2)
-    #password login
-    #email
-    #users
     
 if __name__ =="__main__":
    
@@ -296,13 +243,76 @@ if __name__ =="__main__":
             
    # print (process("easily connecting users to the portals"))
 
+    ##### silhouette score evaluation
+    k = [2, 3, 4, 5, 6,7,8,18] 
+  
+# Appending the silhouette scores of the different models to the list
+    
+    ac18 = AgglomerativeClustering(18 , affinity="euclidean",linkage="ward").fit(final_matrix)
+    ac8 = AgglomerativeClustering(8 , affinity="euclidean",linkage="ward").fit(final_matrix)
+    ac7 = AgglomerativeClustering(7 , affinity="euclidean",linkage="ward").fit(final_matrix)
+    ac6 = AgglomerativeClustering(6 , affinity="euclidean",linkage="ward").fit(final_matrix)
+    ac5 = AgglomerativeClustering(5 , affinity="euclidean",linkage="ward").fit(final_matrix)
+    ac4 = AgglomerativeClustering(4 , affinity="euclidean",linkage="ward").fit(final_matrix)
+    ac3 = AgglomerativeClustering(3 , affinity="euclidean",linkage="ward").fit(final_matrix)
+    ac2 = AgglomerativeClustering(2 , affinity="euclidean",linkage="ward").fit(final_matrix)
+    
+    aggro_clusters = [ac2.labels_,ac3.labels_,ac4.labels_,ac5.labels_,ac6.labels_,ac7.labels_]
+    k_dunn_calinski = [2, 3, 4, 5, 6,7]
+    
+#    ac2= KMeans(2,init= 'random', n_init=10,max_iter=300,tol=1e-04, random_state=0)
+#    ac3= KMeans(3,init= 'random', n_init=10,max_iter=300,tol=1e-04, random_state=0)
+#    ac4= KMeans(4,init= 'random', n_init=10,max_iter=300,tol=1e-04, random_state=0)
+#    ac5= KMeans(5,init= 'random', n_init=10,max_iter=300,tol=1e-04, random_state=0)
+#    ac6= KMeans(6,init= 'random', n_init=10,max_iter=300,tol=1e-04, random_state=0)
+#    ac7= KMeans(7,init= 'random', n_init=10,max_iter=300,tol=1e-04, random_state=0)
+#    ac8= KMeans(8,init= 'random', n_init=10,max_iter=300,tol=1e-04, random_state=0)
+#    ac12= KMeans(12,init= 'random', n_init=10,max_iter=300,tol=1e-04, random_state=0)
+   
+    ##### silhouette score
+    silhouette_scores = [] 
+    silhouette_scores.append( 
+            silhouette_score(final_matrix, ac2.fit_predict(final_matrix))) 
+    silhouette_scores.append( 
+            silhouette_score(final_matrix, ac3.fit_predict(final_matrix))) 
+    silhouette_scores.append( 
+            silhouette_score(final_matrix, ac4.fit_predict(final_matrix))) 
+    silhouette_scores.append( 
+            silhouette_score(final_matrix, ac5.fit_predict(final_matrix))) 
+    silhouette_scores.append( 
+            silhouette_score(final_matrix, ac6.fit_predict(final_matrix))) 
+    silhouette_scores.append( 
+            silhouette_score(final_matrix, ac7.fit_predict(final_matrix))) 
+    silhouette_scores.append( 
+            silhouette_score(final_matrix, ac8.fit_predict(final_matrix))) 
+    silhouette_scores.append( 
+            silhouette_score(final_matrix, ac18.fit_predict(final_matrix))) 
+#    
+    print("silhouette_scores", silhouette_scores)
+     #get the maximum silhouette score
+    maxElement = np.amax(silhouette_scores)
+    optimal_cluster_number = np.argmax(silhouette_scores)+2
+ 
+    print('Max element from Numpy Array : ', maxElement)
+    print('optimal_cluster_number : ', optimal_cluster_number)
+#    
+    #####################
+    dunn_scores = []
+    calinski_harabaz_scores = []
+    for i in aggro_clusters:
+        score1 = dunn(i, metrics.pairwise.euclidean_distances(final_matrix))
+        score2 = metrics.calinski_harabaz_score(final_matrix, i)
+        dunn_scores.append(score1)
+        calinski_harabaz_scores.append(score2)
+        print ("score1",score1)
+        
+    print("dunn_score: ",dunn_scores)
+    print("calinski_harabaz_scores: ",calinski_harabaz_scores)
+    
 #HAC  
-    #based on the dendrogram we have 5 clusetes 
-    k =5 
-    #build the model
-    HClustering = AgglomerativeClustering(n_clusters=k , affinity="euclidean",linkage="ward")
-    new_clusters = clustering_Hac(k, final_matrix, df_orig)
-    for cluster in range(k):
+    #based on the dendrogram we have 5 clusters 
+    new_clusters = clustering_Hac(optimal_cluster_number, final_matrix, df_orig)
+    for cluster in range(optimal_cluster_number):
         tab_cluster = ""
         print("cluster", cluster,"\n")
         for i, sentenceIndex in enumerate(new_clusters[cluster]):
@@ -310,36 +320,20 @@ if __name__ =="__main__":
             tab_cluster = tab_cluster + str(df[sentenceIndex])
         #key_words (tab_cluster)
         key_words(tab_cluster)
+        
+# Plotting a bar graph for dunn scores 
+    print("dunn scores",dunn_scores)
+    plt.bar(k_dunn_calinski, dunn_scores) 
+    plt.xlabel('Number of clusters') 
+    plt.ylabel('dunn(i)') 
+    plt.show()  
+    
+# Plotting a bar graph for calinski_harabaz_scores 
+    print("calinski harabaz scores",calinski_harabaz_scores)
+    plt.bar(k_dunn_calinski, calinski_harabaz_scores) 
+    plt.xlabel('Number of clusters') 
+    plt.ylabel('calinski harabaz scores(i)') 
+    plt.show()  
+        
 
-#    plt.title("Dendrograms")  
-#    dend = shc.dendrogram(shc.Z)
-    #cutting at y=3
-#    cluster = fcluster(Z, 3, criterion='inconsistent', depth=2)
-
-    # # Z = [[0,1,2],[3,4,5],[6,7,8]]
-    # # Z[:2,1] is [1,4]
-    # # Z[:2,:3] is [[0,1,2],[3,4,5]]
-    # # Obtain node of maximum distance. Nodes denote the nodes of predicted clusters.
-#    node, label = leaders(Z, cluster)
-#    node_distance_dict = dict()
-#    node_distance = []
-#    for i in range(len(Z)):
-#        for j in node:
-#            if j in Z[i]:
-#                node_distance.append(Z[i, 2])
-#                node_distance_dict.update({j: Z[i, 2]})
-#    max_node_distance = max(node_distance)
-#    cluster_group = fcluster(Z, t=max_node_distance, criterion='distance')
-#
-#    if len(set(cluster_group)) < 2:
-#        logging.warning(
-#            'The number of clusters in clusterR is less than 2, which maybe leads to inappropriate hierarchical information of feature tree.'
-#            'Try to adingjust topic words or final_t to obtian more clusters in cluster_group.')
-#
-#    print('\n============ Clustering Results ============')
-#    #print('The selected inconsistency threshold:', incon_threshold)
-#    print('Cluster Group:\n', cluster_group)
-#    print('Predicted Clustering Labels:\n', cluster)
-#    print('Label:\n', label)
-#    print('\n')
 
