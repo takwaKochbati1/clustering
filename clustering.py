@@ -37,13 +37,22 @@ stopword_set = set(stopwords.words('english')+['a','of','at','s','for'])
 
 
  
-#df = open('C:/Users/takwa/Desktop/files/25-09-19/admin-key-words.txt','r').readlines()
-#df_orig = open('C:/Users/takwa/Desktop/files/25-09-19/admin-original.txt','r').readlines()
+#df = open('C:/Users/TK257812/Desktop/docs/25-09-19/preprocessed_admin.txt','r').readlines()
+#df_orig = open('C:/Users/TK257812/Desktop/docs/25-09-19/admin-original.txt','r').readlines()
 #df = open('C:/Users/TK257812/Desktop/docs/25-09-19/preprocessed_visitor.txt','r').readlines()
 #df_orig = open('C:/Users/TK257812/Desktop/docs/25-09-19/Visitor.txt','r').readlines()
 #df = open('C:/Users/takwa/Desktop/files/25-09-19/user-keyWords.txt','r').readlines()
-df_orig = open('C:/Users/TK257812/Desktop/docs/25-09-19/User.txt','r').readlines()
-df = open('C:/Users/TK257812/Desktop/docs/25-09-19/preprocessed_user.txt','r').readlines()
+#df_orig = open('C:/Users/TK257812/Desktop/docs/25-09-19/User.txt','r').readlines()
+#df = open('C:/Users/TK257812/Desktop/docs/25-09-19/preprocessed_user.txt','r').readlines()
+
+#df = open("C:/Users/TK257812/Desktop/docs/15-01-2020/user-stories-examples/preprocessed_PlanningPoker_1.txt",'r').readlines()
+#df_orig = open('C:/Users/TK257812/Desktop/docs/15-01-2020/user-stories-examples/PlanningPoker.txt','r').readlines()
+
+#df_orig = open('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/WebCompany.txt','r').readlines()
+#df= open("C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/preprocessed_WebCompany.txt",'r').readlines()
+df_orig = open('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/CMScompany.txt','r').readlines()
+df= open("C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/preprocessed_CMScompany.txt",'r').readlines()
+
 dfLen = len(df)
 
 text = []
@@ -105,15 +114,22 @@ def cos_similarity(w1, w2, wordEmb, dim):
 
     return np.dot(matutils.unitvec(v1), matutils.unitvec(v2))
 
-sent1 = "set a new password login"
-sent2 = "request a  password reset login forgot password"
+sent1 = "edit exist event update content"
+sent2 = "add new event show list event"
 sent3 = "logout so that other Users of my device don't have access to my private account"
 sent4 = "logged out after 10 minutes or more of inactivity account stays secure"
 sent5 = "view interactive map Event Region find event locations"
 
 #print("cos_similarity : ",cos_similarity(process(sent1)[0], process(sent2)[0],model,dim))
 #print("n_similarity:",model.n_similarity(process(sent1).split(), process(sent2).split()))
-
+for w1 in sent1.split():
+    sim1 = []
+    for w2 in sent2.split():
+        sim1.append(cos_similarity(w1, w2, model, dim))
+        print(w1,w2,cos_similarity(w1, w2, model, dim))
+    print("sim1 : ", sim1)
+        #idf = idfMatrix[vocabulary.get(w1)]
+    
 def inner_similarity_mihalcea(sent1, sent2):
     sumSim = 0
     sumIdf = 0
@@ -151,16 +167,16 @@ final_matrix = similarity_mihalcea (df)
 
 ##SILHOUETTE SCORE
 
-best_clusters = 0                       # best cluster number which you will get
-previous_silh_avg = 0.0
-for n_cluster in range(2,dfLen):
-    clusterer = KMeans(n_clusters=n_cluster)
-    cluster_labels = clusterer.fit_predict(final_matrix)
-    silhouette_avg = silhouette_score(final_matrix, cluster_labels, metric='euclidean')
-    if silhouette_avg > previous_silh_avg:
-        previous_silh_avg = silhouette_avg
-        best_clusters = n_cluster
-print ("best_clusters : ",best_clusters)
+#best_clusters = 0                       # best cluster number which you will get
+#previous_silh_avg = 0.0
+#for n_cluster in range(2,dfLen):
+#    clusterer = KMeans(n_clusters=n_cluster)
+#    cluster_labels = clusterer.fit_predict(final_matrix)
+#    silhouette_avg = silhouette_score(final_matrix, cluster_labels, metric='euclidean')
+#    if silhouette_avg > previous_silh_avg:
+#        previous_silh_avg = silhouette_avg
+#        best_clusters = n_cluster
+#print ("best_clusters : ",best_clusters)
 #n_clusters=best_clusters
 
 #Clustering k-means
@@ -193,6 +209,8 @@ def clustering_Hac(n_clusters, final_matrix, file):
     #plt.figure(figsize=(10, 7)) 
     plt.xlabel("Cluster Size")
     plt.ylabel("Distance")
+    #cut point
+    #plt.axhline(y=6, color='r', linestyle='--')
     plt.show()
     
     #HAC clustering
@@ -270,33 +288,34 @@ if __name__ =="__main__":
 #    ac12= KMeans(12,init= 'random', n_init=10,max_iter=300,tol=1e-04, random_state=0)
    
     ##### silhouette score
-    silhouette_scores = [] 
-    silhouette_scores.append( 
-            silhouette_score(final_matrix, ac2.fit_predict(final_matrix))) 
-    silhouette_scores.append( 
-            silhouette_score(final_matrix, ac3.fit_predict(final_matrix))) 
-    silhouette_scores.append( 
-            silhouette_score(final_matrix, ac4.fit_predict(final_matrix))) 
-    silhouette_scores.append( 
-            silhouette_score(final_matrix, ac5.fit_predict(final_matrix))) 
-    silhouette_scores.append( 
-            silhouette_score(final_matrix, ac6.fit_predict(final_matrix))) 
-    silhouette_scores.append( 
-            silhouette_score(final_matrix, ac7.fit_predict(final_matrix))) 
-    silhouette_scores.append( 
-            silhouette_score(final_matrix, ac8.fit_predict(final_matrix))) 
-    silhouette_scores.append( 
-            silhouette_score(final_matrix, ac18.fit_predict(final_matrix))) 
-#    
-    print("silhouette_scores", silhouette_scores)
-     #get the maximum silhouette score
-    maxElement = np.amax(silhouette_scores)
-    optimal_cluster_number = np.argmax(silhouette_scores)+2
- 
-    print('Max element from Numpy Array : ', maxElement)
-    print('optimal_cluster_number : ', optimal_cluster_number)
+#    silhouette_scores = [] 
+#    silhouette_scores.append( 
+#            silhouette_score(final_matrix, ac2.fit_predict(final_matrix))) 
+#    silhouette_scores.append( 
+#            silhouette_score(final_matrix, ac3.fit_predict(final_matrix))) 
+#    silhouette_scores.append( 
+#            silhouette_score(final_matrix, ac4.fit_predict(final_matrix))) 
+#    silhouette_scores.append( 
+#            silhouette_score(final_matrix, ac5.fit_predict(final_matrix))) 
+#    silhouette_scores.append( 
+#            silhouette_score(final_matrix, ac6.fit_predict(final_matrix))) 
+#    silhouette_scores.append( 
+#            silhouette_score(final_matrix, ac7.fit_predict(final_matrix))) 
+#    silhouette_scores.append( 
+#            silhouette_score(final_matrix, ac8.fit_predict(final_matrix))) 
+#    silhouette_scores.append( 
+#            silhouette_score(final_matrix, ac18.fit_predict(final_matrix))) 
+##    
+#    print("silhouette_scores", silhouette_scores)
+#     #get the maximum silhouette score
+#    maxElement = np.amax(silhouette_scores)
+#    optimal_cluster_number = np.argmax(silhouette_scores)+2
+# 
+#    print('Max element from Numpy Array : ', maxElement)
+#    print('optimal_cluster_number : ', optimal_cluster_number)
 #    
     #####################
+    max_dunn_index = 0
     dunn_scores = []
     calinski_harabaz_scores = []
     for i in aggro_clusters:
@@ -309,10 +328,13 @@ if __name__ =="__main__":
     print("dunn_score: ",dunn_scores)
     print("calinski_harabaz_scores: ",calinski_harabaz_scores)
     
+    maxElement_dunn = np.amax(dunn_scores)
+    optimal_numCluster_dunn = np.argmax(dunn_scores)+2
+    
 #HAC  
     #based on the dendrogram we have 5 clusters 
-    new_clusters = clustering_Hac(optimal_cluster_number, final_matrix, df_orig)
-    for cluster in range(optimal_cluster_number):
+    new_clusters = clustering_Hac(optimal_numCluster_dunn, final_matrix, df_orig)
+    for cluster in range(optimal_numCluster_dunn):
         tab_cluster = ""
         print("cluster", cluster,"\n")
         for i, sentenceIndex in enumerate(new_clusters[cluster]):
