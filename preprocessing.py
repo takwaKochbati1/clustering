@@ -56,7 +56,7 @@ def preprocessing(sentence):
     # lower letters,
     lowercase = no_punc.lower()
     # remove stop words and delete Extra Space
-    result = [word for word in lowercase.split() if word not in stopwords.words('english')+['able']]
+    result = [word for word in lowercase.split() if word not in stopwords.words('english')+['able','can','want']]
     result = ' '.join(result)
     return result
 
@@ -107,9 +107,18 @@ def topic_words_extraction(requirement, idf_threshold=0.38, topic_word_weight=1)
 if __name__ =="__main__":
 #    df = open('C:/Users/TK257812/Desktop/docs/25-09-19/Visitor.txt','r').readlines()
 #    df_preprocessed= open("C:/Users/TK257812/Desktop/docs/25-09-19/preprocessed_visitor.txt",'w')
-    df = open('C:/Users/TK257812/Desktop/docs/25-09-19/User.txt','r').readlines()
-    df_preprocessed= open("C:/Users/TK257812/Desktop/docs/25-09-19/preprocessed_user.txt",'w')
+#    df = open('C:/Users/TK257812/Desktop/docs/25-09-19/User.txt','r').readlines()
+#    df_preprocessed= open("C:/Users/TK257812/Desktop/docs/25-09-19/preprocessed_user.txt",'w')
+#    df = open('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/WebCompany.txt','r').readlines()
+#    df_preprocessed= open("C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/preprocessed_WebCompany.txt",'w')
+#    df = open('C:/Users/TK257812/Desktop/docs/25-09-19/admin-original.txt','r').readlines()
+#    df_preprocessed= open("C:/Users/TK257812/Desktop/docs/25-09-19/preprocessed_admin.txt",'w')
+#    df = open('C:/Users/TK257812/Desktop/docs/15-01-2020/user-stories-examples/PlanningPoker.txt','r').readlines()
+#    df_preprocessed= open("C:/Users/TK257812/Desktop/docs/15-01-2020/user-stories-examples/preprocessed_PlanningPoker_1.txt",'w')
+    df = open('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/CMScompany.txt','r').readlines()
+    df_preprocessed= open("C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/preprocessed_CMScompany.txt",'w')
     #a= preprocess(df)
+    
     preprocessed_req = []
     a = lemmatize_sentence("the alarm is set")
     for line in df:
