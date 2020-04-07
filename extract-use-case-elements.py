@@ -10,6 +10,7 @@ Created on Thu Nov 21 14:17:11 2019
 import re
 matches = ""
 import collections
+from gensim.summarization import keywords
 
 s = "As a newly registred User I'm able to open the interactive map from a person's profile page"
 a=""
@@ -164,6 +165,15 @@ def read_file(file):
 #    fin.close()
     print (dict(sentences))
     return dict(sentences)
+
+
+#summarize the cluster
+def key_words (cluster):
+    a = keywords(cluster, words = 3,scores = False, lemmatize = True)
+   # print("key words summarization gensim",a)
+    #return tfidf_.get_feature_names()
+    return a
+
     
  
 
@@ -186,24 +196,33 @@ if __name__ == '__main__':
     
     ## code
      import csv
-#     with open('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/cms-company-extracted-elements.csv', 'w', newline='') as csvfile:
-     with open('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/webCompany-extracted-elements.csv', 'w', newline='') as csvfile:
-         fieldnames = ['cluster', 'actor','use_case','interfaces']
+     with open('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/cms-company-extracted-elements-1.csv', 'w', newline='') as csvfile:
+#     with open('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/webCompany-extracted-elements.csv', 'w', newline='') as csvfile:
+         fieldnames = ['package', 'actor','use_case','interfaces']
          writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
          writer.writeheader()
-    
-#         dictionary = read_file('C:/Users/TK257812/Desktop/docs/25-09-19/clustering-results/cms-company-clusters.txt')
-         dictionary = read_file('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/generated-3-clusters-webCompany.txt')
+#dictionnary returns a dictionnary where keys are cluster numbers
+         dictionary = read_file('C:/Users/TK257812/Desktop/docs/25-09-19/clustering-results/cms-company-clusters.txt')
+#         dictionary = read_file('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/generated-3-clusters-webCompany.txt')
          print (list(dictionary.keys())[-1])
          cluster_number = int(list(dictionary.keys())[-1])
          print(range(cluster_number))
      
+         cluster_label = collections.defaultdict(list)   
          for cluster in range(cluster_number+1):
+             subjects = []
              print (cluster)
              print (dictionary[str(cluster)])
+             #print(key_words (str((dictionary[str(cluster)]))))
+             for sentence in dictionary[str(cluster)]:
+                 subjects.append(str(get_nouns(sentence)))
+             print("key words :",key_words(str(subjects)))
+             cluster_label[cluster].append(key_words(str(subjects)).replace('\n', ' '))
+                 
+             print("labels ", dict(cluster_label))    
              for sentence in dictionary[str(cluster)]:
                  print (sentence)
-                 writer.writerow({'cluster': cluster +1, 'actor': get_actor(sentence),'use_case':get_useCase(sentence)[0],
+                 writer.writerow({'package': cluster_label[cluster], 'actor': get_actor(sentence),'use_case':get_useCase(sentence)[0],
                        'interfaces':get_nouns(sentence)})
      #'verbs':get_verbs(sentence)
 

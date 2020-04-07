@@ -26,9 +26,11 @@ import scipy.cluster.hierarchy as shc
 from sklearn.cluster import AgglomerativeClustering
 from sklearn import metrics
 from dunn_index import dunn
+import time
 #import sys
 #sys.path.append('C:/UsersTK257812/requirements clustering/dunn_index.py')
 #from jqmcvi import base
+start = time.ctime() 
 nltk.download('stopwords')
 nltk.download('wordnet')
 
@@ -48,10 +50,10 @@ stopword_set = set(stopwords.words('english')+['a','of','at','s','for'])
 #df = open("C:/Users/TK257812/Desktop/docs/15-01-2020/user-stories-examples/preprocessed_PlanningPoker_1.txt",'r').readlines()
 #df_orig = open('C:/Users/TK257812/Desktop/docs/15-01-2020/user-stories-examples/PlanningPoker.txt','r').readlines()
 
-#df_orig = open('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/WebCompany.txt','r').readlines()
-#df= open("C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/preprocessed_WebCompany.txt",'r').readlines()
-df_orig = open('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/CMScompany.txt','r').readlines()
-df= open("C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/preprocessed_CMScompany.txt",'r').readlines()
+df_orig = open('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/WebCompany.txt','r').readlines()
+df= open("C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/preprocessed_WebCompany_1.txt",'r').readlines()
+#df_orig = open('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/CMScompany.txt','r').readlines()
+#df= open("C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/preprocessed_CMScompany.txt",'r').readlines()
 
 dfLen = len(df)
 
@@ -98,18 +100,22 @@ def cos_similarity(w1, w2, wordEmb, dim):
         v1 = wordEmb[w1]
     elif w1 in UNKNOW_WORDS:
         v1 = UNKNOW_WORDS.get(w1)
+        print(" unknown word:", w1)
     else:
         embeddings_random = np.random.uniform(-0.1, 0.1, dim)
         UNKNOW_WORDS.update({w1: embeddings_random})
+        print(" unknown word:", w1)
         v1 = embeddings_random
 
     if w2 in wordEmb.vocab:
         v2 = wordEmb[w2]
     elif w2 in UNKNOW_WORDS:
         v2 = UNKNOW_WORDS.get(w2)
+        print(" unknown word:",w2)
     else:
         embeddings_random = np.random.uniform(-0.1, 0.1, dim)
         UNKNOW_WORDS.update({w2: embeddings_random})
+        print(" unknown word:", w2)
         v2 = embeddings_random
 
     return np.dot(matutils.unitvec(v1), matutils.unitvec(v2))
@@ -122,12 +128,14 @@ sent5 = "view interactive map Event Region find event locations"
 
 #print("cos_similarity : ",cos_similarity(process(sent1)[0], process(sent2)[0],model,dim))
 #print("n_similarity:",model.n_similarity(process(sent1).split(), process(sent2).split()))
-for w1 in sent1.split():
-    sim1 = []
-    for w2 in sent2.split():
-        sim1.append(cos_similarity(w1, w2, model, dim))
-        print(w1,w2,cos_similarity(w1, w2, model, dim))
-    print("sim1 : ", sim1)
+
+####  test similarity computation ####
+#for w1 in sent1.split():
+#    sim1 = []
+#    for w2 in sent2.split():
+#        sim1.append(cos_similarity(w1, w2, model, dim))
+#        print(w1,w2,cos_similarity(w1, w2, model, dim))
+#    print("sim1 : ", sim1)
         #idf = idfMatrix[vocabulary.get(w1)]
     
 def inner_similarity_mihalcea(sent1, sent2):
@@ -138,9 +146,9 @@ def inner_similarity_mihalcea(sent1, sent2):
         for w2 in sent2.split():
             sim.append(cos_similarity(w1, w2, model, dim))
             idf = idfMatrix[vocabulary.get(w1)]
-            #print("words idf : ", w1, idf)
+#            print("words idf : ", w1, idf)
         maxSim = max(sim)
-        #print("maxSim", maxSim)
+#        print("maxSim", maxSim)
         innerSim = idf * maxSim
         #print("idf* maxSim = innerSim", innerSim)
         sumSim += innerSim
@@ -246,37 +254,22 @@ def key_words (cluster):
     
     
 if __name__ =="__main__":
+    
+#    df_generated_clusters= open("C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/CMScompany_generated_clusters_1.txt",'w')
+    df_generated_clusters= open("C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/WebCompany_generated_clusters_1.txt",'w')
    
-#k-means    
-#    n_clusters = 5
-#    new_clusters = clustering(n_clusters, final_matrix, df_orig)
-#    for cluster in range(n_clusters):
-#        tab_cluster = ""
-#        print("cluster", cluster,"\n")
-#        for i, sentenceIndex in enumerate(new_clusters[cluster]):
-#            print("sentence ", i,":", df_orig[sentenceIndex],"\n")
-#            tab_cluster = tab_cluster + str(df[sentenceIndex])
-#        #key_words (tab_cluster)
-#        key_words(tab_cluster)
-            
-   # print (process("easily connecting users to the portals"))
-
-    ##### silhouette score evaluation
-    k = [2, 3, 4, 5, 6,7,8,18] 
-  
 # Appending the silhouette scores of the different models to the list
     
-    ac18 = AgglomerativeClustering(18 , affinity="euclidean",linkage="ward").fit(final_matrix)
-    ac8 = AgglomerativeClustering(8 , affinity="euclidean",linkage="ward").fit(final_matrix)
-    ac7 = AgglomerativeClustering(7 , affinity="euclidean",linkage="ward").fit(final_matrix)
+#    ac7 = AgglomerativeClustering(7 , affinity="euclidean",linkage="ward").fit(final_matrix)
     ac6 = AgglomerativeClustering(6 , affinity="euclidean",linkage="ward").fit(final_matrix)
     ac5 = AgglomerativeClustering(5 , affinity="euclidean",linkage="ward").fit(final_matrix)
     ac4 = AgglomerativeClustering(4 , affinity="euclidean",linkage="ward").fit(final_matrix)
     ac3 = AgglomerativeClustering(3 , affinity="euclidean",linkage="ward").fit(final_matrix)
     ac2 = AgglomerativeClustering(2 , affinity="euclidean",linkage="ward").fit(final_matrix)
     
-    aggro_clusters = [ac2.labels_,ac3.labels_,ac4.labels_,ac5.labels_,ac6.labels_,ac7.labels_]
-    k_dunn_calinski = [2, 3, 4, 5, 6,7]
+    aggro_clusters = [ac2.labels_,ac3.labels_,ac4.labels_,ac5.labels_,ac6.labels_]
+#    aggro_clusters = [ac2.labels_,ac3.labels_,ac4.labels_,ac5.labels_,ac6.labels_]
+    k_dunn_calinski = [2, 3, 4, 5, 6]
     
 #    ac2= KMeans(2,init= 'random', n_init=10,max_iter=300,tol=1e-04, random_state=0)
 #    ac3= KMeans(3,init= 'random', n_init=10,max_iter=300,tol=1e-04, random_state=0)
@@ -317,16 +310,16 @@ if __name__ =="__main__":
     #####################
     max_dunn_index = 0
     dunn_scores = []
-    calinski_harabaz_scores = []
+#    calinski_harabaz_scores = []
     for i in aggro_clusters:
         score1 = dunn(i, metrics.pairwise.euclidean_distances(final_matrix))
-        score2 = metrics.calinski_harabaz_score(final_matrix, i)
+#        score2 = metrics.calinski_harabaz_score(final_matrix, i)
         dunn_scores.append(score1)
-        calinski_harabaz_scores.append(score2)
+        #calinski_harabaz_scores.append(score2)
         print ("score1",score1)
         
     print("dunn_score: ",dunn_scores)
-    print("calinski_harabaz_scores: ",calinski_harabaz_scores)
+    #print("calinski_harabaz_scores: ",calinski_harabaz_scores)
     
     maxElement_dunn = np.amax(dunn_scores)
     optimal_numCluster_dunn = np.argmax(dunn_scores)+2
@@ -337,11 +330,14 @@ if __name__ =="__main__":
     for cluster in range(optimal_numCluster_dunn):
         tab_cluster = ""
         print("cluster", cluster,"\n")
+        df_generated_clusters.write("cluster "+str(cluster + 1)+"\n\n") 
         for i, sentenceIndex in enumerate(new_clusters[cluster]):
             print("sentence ", i,":", df_orig[sentenceIndex],"\n")
+            df_generated_clusters.write(df_orig[sentenceIndex]+"\n") 
             tab_cluster = tab_cluster + str(df[sentenceIndex])
         #key_words (tab_cluster)
         key_words(tab_cluster)
+    df_generated_clusters.close()
         
 # Plotting a bar graph for dunn scores 
     print("dunn scores",dunn_scores)
@@ -349,13 +345,16 @@ if __name__ =="__main__":
     plt.xlabel('Number of clusters') 
     plt.ylabel('dunn(i)') 
     plt.show()  
+    end = time.ctime()
+    print ("start = ", start)
+    print ("end = ", end)
     
 # Plotting a bar graph for calinski_harabaz_scores 
-    print("calinski harabaz scores",calinski_harabaz_scores)
-    plt.bar(k_dunn_calinski, calinski_harabaz_scores) 
-    plt.xlabel('Number of clusters') 
-    plt.ylabel('calinski harabaz scores(i)') 
-    plt.show()  
+#    print("calinski harabaz scores",calinski_harabaz_scores)
+#    plt.bar(k_dunn_calinski, calinski_harabaz_scores) 
+#    plt.xlabel('Number of clusters') 
+#    plt.ylabel('calinski harabaz scores(i)') 
+#    plt.show()  
         
 
 
