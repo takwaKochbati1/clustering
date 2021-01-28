@@ -9,6 +9,7 @@ Created on Thu Nov 21 14:17:11 2019
 
 import re
 matches = ""
+import time
 import collections
 from gensim.summarization import keywords
 
@@ -24,6 +25,10 @@ def find_start_pattern(sent):
         return "I am able to"
     elif "I want to"in sent:
         return "I want to"
+    elif "I dont want to"in sent:
+        return "I dont want to"
+    elif "I would like to"in sent:
+        return "I would like to"
     elif "I want"in sent:
         return "I want"
     elif "I need" in sent:
@@ -100,7 +105,7 @@ import spacy
 #from spacy.en import English
 import textacy
 nlp = spacy.load("en_core_web_sm") 
-
+start = time.ctime()
 #def get_verbs(sent):
 #    req=(sent)
 #    about_talk_text = (get_useCase(sent)[0])
@@ -198,21 +203,25 @@ if __name__ == '__main__':
      import csv
      with open('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/cms-company-extracted-elements-1.csv', 'w', newline='') as csvfile:
 #     with open('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/webCompany-extracted-elements.csv', 'w', newline='') as csvfile:
-         fieldnames = ['package', 'actor','use_case','interfaces']
+#     with open('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/archiveSpace-extracted-elements-1.csv', 'w', newline='') as csvfile:
+         fieldnames = ['package', 'actor','use_case']
          writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
          writer.writeheader()
 #dictionnary returns a dictionnary where keys are cluster numbers
          dictionary = read_file('C:/Users/TK257812/Desktop/docs/25-09-19/clustering-results/cms-company-clusters.txt')
 #         dictionary = read_file('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/generated-3-clusters-webCompany.txt')
+#         dictionary= read_file("C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/ArchiveSpace_generated_clusters_1.txt")
+
          print (list(dictionary.keys())[-1])
          cluster_number = int(list(dictionary.keys())[-1])
          print(range(cluster_number))
-     
+    
+#cluster labels    
          cluster_label = collections.defaultdict(list)   
-         for cluster in range(cluster_number+1):
+         for cluster in range(cluster_number):
              subjects = []
-             print (cluster)
-             print (dictionary[str(cluster)])
+             print ("cluster : ",cluster)
+             print ("dictionary[str(cluster)] :",dictionary[str(cluster)])
              #print(key_words (str((dictionary[str(cluster)]))))
              for sentence in dictionary[str(cluster)]:
                  subjects.append(str(get_nouns(sentence)))
@@ -222,11 +231,14 @@ if __name__ == '__main__':
              print("labels ", dict(cluster_label))    
              for sentence in dictionary[str(cluster)]:
                  print (sentence)
-                 writer.writerow({'package': cluster_label[cluster], 'actor': get_actor(sentence),'use_case':get_useCase(sentence)[0],
-                       'interfaces':get_nouns(sentence)})
+                 writer.writerow({'package': cluster_label[cluster], 'actor': get_actor(sentence),'use_case':get_useCase(sentence)[0]})
      #'verbs':get_verbs(sentence)
 
      csvfile.close()
+     
+     end = time.ctime()
+     print ("start = ", start)
+     print ("end = ", end)
              
                
          

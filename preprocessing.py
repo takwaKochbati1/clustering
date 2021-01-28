@@ -66,9 +66,60 @@ def preprocessing(sentence):
     # lower letters,
     lowercase = no_punc.lower()
     # remove stop words and delete Extra Space
-    result = [word for word in lowercase.split() if word not in stopwords.words('english')+['able','can','want']]
+    result = [word for word in lowercase.split() if word not in stopwords.words('english')+['able','can','want','would like', 'want to','dont want']]
     result = ' '.join(result)
     return result
+
+#test extract actor
+nouns = []
+sent ="As an Administrator, I want to be able to reset a User's password for them"
+req=(sent)
+nlp = spacy.load("en_core_web_sm")
+req_doc = nlp(req)   
+
+for tok in req_doc:
+    if (tok.dep_ == 'compound' and tok.i == 2): # the idx of the actor is always = 2
+        compound = req_doc[tok.i: tok.head.i + 1]
+        print("idx :",tok.i)
+        actor = compound
+        print("actor compound:",actor)
+        
+    elif(tok.pos_ == 'NOUN' and tok.i == 2):
+        actor = tok
+        print("actor noun", actor)
+        
+    
+#    token.pos_ == 'NOUN'
+
+
+#print (req_doc) 
+#nounChunks = list(req_doc.noun_chunks)
+#print(nounChunks)
+#print(nounChunks[0])
+#for chunk in nounChunks:
+#    print ("chunks all :",chunk)
+#    print ("chunks[0] :",chunk[0])
+
+
+    
+
+#def get_actor(sent):
+#    req=(sent)
+#    req_doc = textacy.make_spacy_doc(req, lang='en_core_web_sm')
+#    #Extract Noun Phrase to explain what nouns are involved
+#    actor = ''
+#    actors = []
+#    for chunk in req_doc.noun_chunks:
+#         print ("chunks :",chunk)
+#         if(chunk not in actors):
+#             actors.append(chunk)
+#         actor = str(actors[0]).replace('a ','')
+#         actor = actor.replace('an ','')
+#         print('actor :', actor)
+#             
+#             
+#    #print(actors[0])
+#    return actor
 
 
 def get_actor(sent):
@@ -76,21 +127,36 @@ def get_actor(sent):
     req=(sent)
     nlp = spacy.load("en_core_web_sm")
     req_doc = nlp(req)
+    for tok in req_doc:
+        if (tok.dep_ == 'compound' and tok.i == 2): # the idx of the actor is always = 2
+            compound = req_doc[tok.i: tok.head.i + 1]
+            print("idx :",tok.i)
+            actor = str(compound)
+            print("actor compound:",actor)
+            
+        elif(tok.pos_ == 'NOUN' and tok.i == 2):
+            actor = str(tok)
+            print("actor noun", actor)
 #    req_doc = textacy.make_spacy_doc(req, lang='en_core_web_sm')
     #Extract Noun Phrase to explain what nouns are involved
-    actors = []
-    for chunk in list(req_doc.noun_chunks)[0]:
-         print ("req_doc.noun_chunks :",req_doc.noun_chunks)
-         print ("chunks all :",chunk)
-#         print ("chunks :",chunk[0])
-         if(chunk not in actors):
-             actors.append(chunk)
-         actor = str(actors[0])
-         print ("actor :", actor)
+#    nounChunks = list(req_doc.noun_chunks)
+#    print("all nounChunks :",nounChunks)
+#    actor = str(nounChunks[0])
+#    print("actor:",actor)
+#    for chunk in list(req_doc.noun_chunks):
+#         print ("req_doc.noun_chunks :",req_doc.noun_chunks)
+#         print ("chunks all :",chunk)
+##         print ("chunks :",chunk[0])
+#         if(chunk not in actors):
+#             actors.append(chunk)
+#         actor = str(actors[0])
+#         print ("actor :", actor)
     return actor
 
-
+#eliminate the actor
+    
 def topic_words_extraction(requirement):
+    actor_removed_requirement = ''
 
     """
     Remove inappropriate words from Lexicon (i.e., topic words).
@@ -103,37 +169,15 @@ def topic_words_extraction(requirement):
 #    vocabulary = vectorizer.fit(requirement).vocabulary_
 #    idfMatrix = vectorizer.fit(requirement).idf_
 #    print(idfMatrix)
-    clean_requirements = []
     # # if idf value of word w is too low, it means the word w appears in the majority of preprocessed requirements.
-    for sentence in requirement:
+#    for sentence in requirement:
 #        clean_sentence = ''
-        actor_to_remove = get_actor(sentence)
-        sentence = sentence.replace(actor_to_remove,'')
-### idf to extract key words
-#        for w in sentence.split():
-#            #print(w)
-#            idfWeight = idfMatrix[vocabulary.get(w)]
-#           # print("idfWeight",idfWeight)
-#            # print(type(idfWeight))
-#            # # if the type of idf value of word w is an array, it means the word w is not in the preprocessed requirements.
-#            # # Hence, it should be removed from lexicon (i.e., topic words)
-#            if isinstance(idfWeight, numpy.ndarray):
-#                continue
-#            else:
-#                idfWeight = idfMatrix[vocabulary.get(w)]
-#                numDoc = len(requirement)
-#                print("numDoc",numDoc)
-#                ratio_weight = idfWeight / (math.log((numDoc + 1) / 2) + 1)
-#                #print("ratio_weight",ratio_weight)
-#                if ratio_weight > idf_threshold:
-#                    clean_sentence = clean_sentence+' '+w
-#                else:
-#                    print("excluded word ", w)
-                    
-#        clean_requirements.append(clean_sentence)
-        clean_requirements.append(sentence)
+    actor_to_remove = get_actor(requirement.lower())
+    print ('actor_to_remove', actor_to_remove)
+    actor_removed_requirement = requirement.replace(actor_to_remove,'')
+    print ('actor_removed_requirement', actor_removed_requirement)
         
-    return clean_requirements
+    return actor_removed_requirement
 
     
 if __name__ =="__main__":
@@ -144,8 +188,8 @@ if __name__ =="__main__":
 #    df_preprocessed= open("C:/Users/TK257812/Desktop/docs/25-09-19/preprocessed_visitor.txt",'w')
 #    df = open('C:/Users/TK257812/Desktop/docs/25-09-19/User.txt','r').readlines()
 #    df_preprocessed= open("C:/Users/TK257812/Desktop/docs/25-09-19/preprocessed_user.txt",'w')
-    df = open('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/WebCompany.txt','r').readlines()
-    df_preprocessed= open("C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/preprocessed_WebCompany_1.txt",'w')
+#    df = open('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/WebCompany.txt','r').readlines()
+#    df_preprocessed= open("C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/preprocessed_WebCompany_1.txt",'w')
 #    df = open('C:/Users/TK257812/Desktop/docs/25-09-19/admin-original.txt','r').readlines()
 #    df_preprocessed= open("C:/Users/TK257812/Desktop/docs/25-09-19/preprocessed_admin.txt",'w')
 #    df = open('C:/Users/TK257812/Desktop/docs/15-01-2020/user-stories-examples/PlanningPoker.txt','r').readlines()
@@ -153,19 +197,39 @@ if __name__ =="__main__":
 #    df = open('C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/CMScompany.txt','r').readlines()
 #    df_preprocessed= open("C:/Users/TK257812/Desktop/docs/25-09-19/user_stories/preprocessed_CMScompany_test_4.txt",'w')
     #a= preprocess(df)
+#    df = open('C:/Users/TK257812/Desktop/docs/18-05-20/ground truth clusters/web-company.txt','r').readlines()
+#    df_preprocessed= open("C:/Users/TK257812/Desktop/docs/18-05-20/ground truth clusters/preprocessed_web-company.txt",'w')
+#    df = open('C:/Users/TK257812/Desktop/docs/18-05-20/clustering-baseline/e-store.txt','r').readlines()
+#    df_preprocessed= open('C:/Users/TK257812/Desktop/docs/18-05-20/clustering-baseline/preprocessed-e-store-2.txt','w')
+#    df = open('C:/Users/TK257812/Desktop/docs/18-05-20/clustering-baseline/inventory.txt','r').readlines()
+#    df_preprocessed= open('C:/Users/TK257812/Desktop/docs/18-05-20/clustering-baseline/preprocessed-inventory-updated.txt','w')
+#    df = open('C:/Users/TK257812/Desktop/docs/18-05-20/clustering-baseline/case-studies-extracting-topic-words/MHC-PMS.txt','r').readlines()
+#    df_preprocessed= open('C:/Users/TK257812/Desktop/docs/18-05-20/clustering-baseline/case-studies-extracting-topic-words/MHC-PMS-preprocessing.txt','w')
+    df = open('C:/Users/TK257812/Desktop/docs/18-05-20/clustering-baseline/wasp.txt','r').readlines()
+    df_preprocessed= open('C:/Users/TK257812/Desktop/docs/18-05-20/clustering-baseline/wasp-preprocessing.txt','w') 
+    remove_actor_set = []
+    for line in df:
+        line = topic_words_extraction (line)
+        print ("clean_requirements :",line)
+        remove_actor_set.append(line)
+        
+    print("remove_actor_set : ", remove_actor_set)
+        
+#        
+#        for sentence in clean_requirements:
+#            df_preprocessed.write(sentence +"\n") 
+#            print(sentence)
+   
     
     preprocessed_req = []
     a = lemmatize_sentence("the alarm is set")
-    for line in df:
+    for line in remove_actor_set:
         sentence = preprocessing(line)
-        print(sentence)
-        preprocessed_req.append(sentence)
-        
-    print(preprocessed_req)
-    clean_requirements = topic_words_extraction (preprocessed_req)
-    for sentence in clean_requirements:
         df_preprocessed.write(sentence +"\n") 
         print(sentence)
+        
+#    print(preprocessed_req)
+   
         
     df_preprocessed.close()
     end = time.ctime()
